@@ -46,6 +46,7 @@ var Membership = function (dbName) {
             reg.applyForMembership({username: username, password: password, confirm: confirm, email: email, phone: phone}, next);
         });
     };
+    return self;
 };
 
 util.inherits(Membership, events.EventEmitter);
