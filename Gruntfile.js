@@ -1,4 +1,4 @@
-var db = require("secondthought");
+var mysqlDB = require('mysql');
 var assert = require("assert");
 
 module.exports = function (grunt) {
@@ -14,13 +14,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask("installDb", function () {
         var done = this.async();
-        db.connect({ db: "membership", host: 'ubuntu_vm.com', port: 28015}, function (err, db) {
-            db.install(['users', 'logs', 'sessions'], function (err, tableResult) {
-                assert.ok(err == null, err);
-                console.log("DB installed: " + tableResult);
-                done();
-            });
-        });
+        var connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "pass"});
+
     });
 
     grunt.loadNpmTasks("grunt-contrib-jshint");

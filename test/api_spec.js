@@ -1,19 +1,26 @@
 /**
  * Created by Krzysztof on 2015-05-24.
  */
-var db = require("secondthought");
+var mysqlDB = require('mysql');
 var assert = require("assert");
 var Membership = require("../index");
 
 describe("Main API", function () {
-    var memb = new Membership("membership");
+    var memb,
+        connection;
     before(function (done) {
-        db.connect({db: "membership", host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            db.users.destroyAll(function (err, result) {
-                memb
-                done();
-            });
+        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "pass"});
+        connection.connect(function (err) {
+           if(err) {
+               console.log("Error while connecting to the MySQL DB: " + err.stack);
+               return;
+           }
         });
+        memb = new Membership(connection);
+        done();
+    });
+    after(function () {
+        connection.close();
     });
     describe("authentication", function () {
         var newUser = {};

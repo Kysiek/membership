@@ -8,15 +8,18 @@ var Authentication = require("./lib/authentication");
 var db = require("secondthought");
 var assert = require("assert");
 
-var Membership = function (dbName) {
+var Membership = function (con) {
     var self = this;
     events.EventEmitter.call(self);
+    var connection = con;
 
     self.findUserByToken = function (token, next) {
         db.connect({db: dbName, host: "ubuntu_vm.com", port: 28015}, function (err, db) {
             assert.ok(err === null, err);
             db.users.first({authenticationToken: token}, next);
         });
+
+        connection.query('SELECT * FROM ');
     };
     
     self.authenticate = function (username, password, next) {
