@@ -4,35 +4,37 @@
 var mysqlDB = require('mysql');
 var assert = require("assert");
 var Membership = require("../index");
+var should = require("should");
 
 describe("Main API", function () {
     var memb,
         connection;
     before(function (done) {
-        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "pass"});
+        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "passs", database: "BlaBlaPaczka"});
         connection.connect(function (err) {
-           if(err) {
-               console.log("Error while connecting to the MySQL DB: " + err.stack);
-               return;
-           }
+            if(err) {
+                console.log("Error while connecting to the MySQL DB: " + err.stack);
+                return done();
+            }
+            memb = new Membership(connection);
+            done();
         });
-        memb = new Membership(connection);
-        done();
     });
     after(function () {
-        connection.close();
+        connection.end();
     });
     describe("authentication", function () {
         var newUser = {};
         before(function (done) {
-            memb.register("kysiek", "kysiek@com.pl", "xxx", "xxx", "698250944", function (err, result) {
+            memb.register("kysiekk", "xxx", "xxx", "6982509434", function (err, result) {
                 newUser = result.user;
+                console.log(result.message);
                 assert.ok(result.success, "Can't register");
                 done();
             });
         });
         it("authenticates", function (done) {
-            memb.authenticate("kysiek","xxx", function (err, result) {
+            memb.authenticate("6982509434","xxx", function (err, result) {
                 result.success.should.be.equal(true);
                 done();
             });

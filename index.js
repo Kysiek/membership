@@ -8,46 +8,41 @@ var Authentication = require("./lib/authentication");
 var db = require("secondthought");
 var assert = require("assert");
 
-var Membership = function (con) {
+var Membership = function (connection) {
     var self = this;
     events.EventEmitter.call(self);
-    var connection = con;
 
     self.findUserByToken = function (token, next) {
-        db.connect({db: dbName, host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            assert.ok(err === null, err);
-            db.users.first({authenticationToken: token}, next);
+        var sqlToFindUserByToken    = 'SELECT * FROM users WHERE authenticationToken = ' + connection.escape(token);
+        connection.query(sqlToFindUserByToken, function(err, rows) {
+            assert(rows.length === 1,"Could not find user id by token");
+            next(err,rows[0]);
         });
 
-        connection.query('SELECT * FROM ');
     };
     
-    self.authenticate = function (username, password, next) {
-        db.connect({db: dbName, host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            var auth = new Authentication(db);
+    self.authenticate = function (phoneNumber, password, next) {
+        var auth = new Authentication(connection);
 
-            auth.on("authenticated", function (authResult) {
-                self.emit("authenticated", authResult)
-            });
-            auth.on("non-authenticated", function (authResult) {
-                self.emit("non-authenticated", authResult)
-            });
-            auth.authenticate({username: username, password: password}, next);
+        auth.on("authenticated", function (authResult) {
+            self.emit("authenticated", authResult)
         });
+        auth.on("non-authenticated", function (authResult) {
+            self.emit("non-authenticated", authResult)
+        });
+        auth.authenticate({phoneNumber: phoneNumber, password: password}, next);
     };
 
-    self.register = function (username, email, password, confirm, phone,  next) {
-        db.connect({db: dbName, host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            var reg = new Registration(db);
+    self.register = function (username, password, confirm, phoneNumber,  next) {
+        var reg = new Registration(connection);
 
-            reg.on("registered", function (regResult) {
-                self.emit("registered", regResult)
-            });
-            reg.on("non-registered", function (regResult) {
-                self.emit("non-registered", regResult)
-            });
-            reg.applyForMembership({username: username, password: password, confirm: confirm, email: email, phone: phone}, next);
+        reg.on("registered", function (regResult) {
+            self.emit("registered", regResult)
         });
+        reg.on("non-registered", function (regResult) {
+            self.emit("non-registered", regResult)
+        });
+        reg.applyForMembership({username: username, password: password, confirm: confirm, phoneNumber: phoneNumber}, next);
     };
 };
 

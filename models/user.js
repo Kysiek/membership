@@ -16,8 +16,8 @@ var User = function(args) {
     }
     user.username = args.username;
     user.email = args.email;
-    user.phone = args.phone;
-    user.status = args.phone || "pending";
+    user.phoneNumber = args.phoneNumber;
+    user.status = args.status || "pending";
     user.createdAt = args.createdAt || new Date();
     user.signInCount = args.signInCount || 0;
     user.lastLoginAt = args.lastLoginAt || new Date();

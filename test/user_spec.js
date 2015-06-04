@@ -8,10 +8,7 @@ describe("User", function(){
     describe("defaults", function(){
         var user = {};
         before(function () {
-           user = new User({username: "kysiek", phone: "698256044", email: "kysiek@wp.com"});
-        });
-        it("email is kysiek@wp.com", function() {
-                user.email.should.equal("kysiek@wp.com")
+           user = new User({username: "kysiek", phone: "698256044"});
         });
         it("name is kysiek", function() {
             user.username.should.equal("kysiek")

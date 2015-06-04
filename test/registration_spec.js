@@ -2,32 +2,36 @@
  * Created by Krzysztof on 2015-05-23.
  */
 var Registration = require("../lib/registration");
-var db = require("secondthought");
+var mysqlDB = require('mysql');
+var should = require('should');
 
 describe("Registration", function () {
-    var reg = {};
+    var reg = {}, connection;
     before(function(done){
-        db.connect({db: "membership", host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            reg = new Registration(db);
+        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "passs", database: "BlaBlaPaczka"});
+        connection.connect(function (err) {
+            if(err) {
+                console.log("Error while connecting to the MySQL DB: " + err.stack);
+                return;
+            }
+            reg = new Registration(connection);
             done();
         });
+    });
+    after(function (done) {
+        connection.end();
+        done();
     });
 
     describe("a valid registration", function () {
         var regResult;
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    "password": "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, result) {
-                    regResult = result;
-                    done();
-                });
-            });
+
+            reg.applyForMembership({username: "kysiek", password: "acd", confirm:"acd", phoneNumber: "698256044" }, function (err, result) {
+                regResult = result;
+                console.log(regResult);
+                done();
+            })
 
         });
         it("is successful", function () {
@@ -50,35 +54,13 @@ describe("Registration", function () {
         })
     });
 
-    describe("an empty or null email", function () {
-        var regResult;
-        before(function(done) {
-            reg.applyForMembership({
-                username: "kysiek",
-                "password": "xxx",
-                confirm: "xxx",
-                phone: "23232323",
-                email: ""
-            }, function(err, result) {
-                regResult = result;
-                done();
-            });
-        });
-        it("is not successful", function () {
-            regResult.success.should.equal(false);
-        });
-        it("tells user that email is required", function () {
-            regResult.message.should.equal("Email is required");
-        });
-    });
-
     describe("an empty or null username", function () {
         var regResult;
         before(function(done) {
             reg.applyForMembership({
                 "password": "xxx",
                 confirm: "xxx",
-                phone: "23232323",
+                phoneNumber: "23232323",
                 email: "kysiek@wp.com"
             }, function(err, result) {
                 regResult = result;
@@ -99,7 +81,7 @@ describe("Registration", function () {
             reg.applyForMembership({
                 "password": "xxx",
                 confirm: "xxx",
-                phone: "",
+                phoneNumber: "",
                 email: "kysiek@wp.com",
                 username: "kysiek"
             }, function(err, result) {
@@ -121,7 +103,7 @@ describe("Registration", function () {
             reg.applyForMembership({
                 "password": "",
                 confirm: "xxx",
-                phone: "asdasd",
+                phoneNumber: "asdasd",
                 email: "kysiek@wp.com",
                 username: "kysiek"
             }, function(err, result) {
@@ -143,7 +125,7 @@ describe("Registration", function () {
             reg.applyForMembership({
                 "password": "asd",
                 confirm: "xxx",
-                phone: "asdasd",
+                phoneNumber: "asdasd",
                 email: "kysiek@wp.com",
                 username: "kysiek"
             }, function(err, result) {
@@ -159,69 +141,25 @@ describe("Registration", function () {
         });
     });
 
-    describe("email already exist", function () {
-        var regResult;
-        before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    "password": "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function() {
-                    reg.applyForMembership({
-                        username: "kysiek",
-                        "password": "xxxx",
-                        confirm: "xxxx",
-                        phone: "23232323",
-                        email: "kysiek2@wp.com"
-                    }, function(err, result) {
-                        regResult = result;
-                        done();
-                    });
-                });
-            });
-
-        });
-        it("is not successful", function () {
-            regResult.success.should.be.equal(false);
-        });
-        it("tells user that email already exists", function () {
-            regResult.message.should.be.equal("This username already exists");
-        });
-    });
 
     describe("username already exist", function () {
         var regResult;
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    "password": "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function() {
-                    reg.applyForMembership({
-                        username: "kysiek2",
-                        "password": "xxxx",
-                        confirm: "xxxx",
-                        phone: "23232323",
-                        email: "kysiek@wp.com"
-                    }, function(err, result) {
-                        regResult = result;
-                        done();
-                    });
-                });
+            reg.applyForMembership({
+                "password": "asd",
+                confirm: "xxx",
+                phoneNumber: "asdasd",
+                email: "kysiek@wp.com",
+                username: "kysiek"
+            }, function(err, result) {
+                regResult = result;
+                done();
             });
 
         });
         it("is not successful", function () {
-            regResult.success.should.be.equal(false);
         });
         it("tells user that username already exists", function () {
-            regResult.message.should.be.equal("This email already exists");
         });
     });
 });

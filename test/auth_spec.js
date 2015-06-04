@@ -2,39 +2,38 @@
  * Created by Krzysztof on 2015-05-24.
  */
 var Registration = require("../lib/registration");
-var db = require("secondthought");
+var mysqlDB = require("mysql");
 var assert = require("assert");
 var Authentication = require("../lib/authentication");
 var should = require("should");
 
 describe("Authentication", function () {
     var reg = {},
-        auth = {};
+        auth = {},
+        connection;
     before(function(done){
-        db.connect({db: "membership", host: "ubuntu_vm.com", port: 28015}, function (err, db) {
-            reg = new Registration(db);
-            auth = new Authentication(db);
+        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "passs", database: "BlaBlaPaczka"});
+        connection.connect(function (err) {
+            if(err) {
+                console.log("Error while connecting to the MySQL DB: " + err.stack);
+                return;
+                done();
+            }
+            auth = new Authentication(connection);
             done();
         });
+    });
+    after(function (done) {
+        connection.end();
+        done();
     });
     describe("a valid login", function () {
         var authResult = {};
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    password: "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, regResult) {
-                    assert.ok(regResult.success);
-                    auth.authenticate({username: "kysiek", password: "xxx"}, function (err, result) {
-                        assert.ok(err === null, err);
-                        authResult = result;
-                        done();
-                    });
-                });
+            auth.authenticate({phoneNumber: "698256044", password: "acd"}, function (err, result) {
+                assert.ok(err === null, err);
+                authResult = result;
+                done();
             });
 
         });
@@ -55,80 +54,47 @@ describe("Authentication", function () {
             should.exist(authResult.user.currentLoginAt);
         });
     }); 
-    describe("empty username", function () {
+    describe("empty phoneNumber", function () {
         var authResult = {};
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    password: "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, regResult) {
-                    assert.ok(regResult.success);
-                    auth.authenticate({username: "", password: "xxx"}, function (err, result) {
-                        assert.ok(err === null, err);
-                        authResult = result;
-                        done();
-                    });
-                });
+            auth.authenticate({phoneNumber: "", password: "xxx"}, function (err, result) {
+                assert.ok(err === null, err);
+                authResult = result;
+                done();
             });
 
         });
         it("is not successful", function () {
             authResult.success.should.be.equal(false);
         });
-        it("returns a message saying 'Username cannot be empty'", function () {
-            authResult.message.should.be.equal("Username cannot be empty");
+        it("returns a message saying 'Phone number cannot be empty'", function () {
+            authResult.message.should.be.equal("Phone number cannot be empty");
         });
     });
-    describe("incorrect username", function () {
+    describe("incorrect phone number", function () {
         var authResult = {};
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    password: "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, regResult) {
-                    assert.ok(regResult.success);
-                    auth.authenticate({username: "kysie", password: "xxx"}, function (err, result) {
-                        assert.ok(err === null, err);
-                        authResult = result;
-                        done();
-                    });
-                });
+            auth.authenticate({phoneNumber: "698256043", password: "acd"}, function (err, result) {
+                assert.ok(err === null, err);
+                authResult = result;
+                done();
             });
 
         });
         it("is not successful", function () {
             authResult.success.should.be.equal(false);
         });
-        it("return a message saying 'Invalid username'", function () {
-            authResult.message.should.be.equal("Invalid username");
+        it("return a message saying 'Invalid phone number'", function () {
+            authResult.message.should.be.equal("Invalid phone number");
         });
     });
     describe("empty password", function () {
         var authResult = {};
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    password: "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, regResult) {
-                    assert.ok(regResult.success);
-                    auth.authenticate({username: "kysie", password: ""}, function (err, result) {
-                        assert.ok(err === null, err);
-                        authResult = result;
-                        done();
-                    });
-                });
+            auth.authenticate({phoneNumber: "698256044", password: ""}, function (err, result) {
+                assert.ok(err === null, err);
+                authResult = result;
+                done();
             });
 
         });
@@ -142,21 +108,10 @@ describe("Authentication", function () {
     describe("password does not match", function () {
         var authResult = {};
         before(function(done) {
-            db.users.destroyAll(function (err, result) {
-                reg.applyForMembership({
-                    username: "kysiek",
-                    password: "xxx",
-                    confirm: "xxx",
-                    phone: "23232323",
-                    email: "kysiek@wp.com"
-                }, function(err, regResult) {
-                    assert.ok(regResult.success);
-                    auth.authenticate({username: "kysiek", password: "yyy"}, function (err, result) {
-                        assert.ok(err === null, err);
-                        authResult = result;
-                        done();
-                    });
-                });
+            auth.authenticate({phoneNumber: "698256044", password: "acde"}, function (err, result) {
+                assert.ok(err === null, err);
+                authResult = result;
+                done();
             });
 
         });
