@@ -9,9 +9,9 @@ var Application = function(args) {
     app.confirm = args.confirm;
     app.phoneNumber = args.phoneNumber;
     app.status = "pending";
+    app.code = null;
     app.message = null;
     app.user = null;
-    app.log = null;
 
     app.isValid = function() {
         return app.status == "validated";
