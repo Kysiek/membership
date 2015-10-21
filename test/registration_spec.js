@@ -8,7 +8,7 @@ var should = require('should');
 describe("Registration", function () {
     var reg = {}, connection;
     before(function(done){
-        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "passs", database: "BlaBlaPaczka"});
+        connection = mysqlDB.createConnection({host: "localhost", user: "root", password: "", database: "AngryHamster"});
         connection.connect(function (err) {
             if(err) {
                 console.log("Error while connecting to the MySQL DB: " + err.stack);
@@ -27,7 +27,7 @@ describe("Registration", function () {
         var regResult;
         before(function(done) {
 
-            reg.applyForMembership({username: "kysiek", password: "acd", confirm:"acd", phoneNumber: "698256044" }, function (err, result) {
+            reg.applyForMembership({username: "kysiek", password: "passsss" }, function (err, result) {
                 regResult = result;
                 console.log(regResult);
                 done();
@@ -40,28 +40,19 @@ describe("Registration", function () {
         it("creates a user", function () {
             regResult.user.should.be.defined;
         });
-        it("creates a log entry", function () {
-            regResult.log.should.be.defined;
-        });
         it("sets the user status to the approved", function () {
             regResult.user.status.should.be.equal("approved");
         });
         it("sets the welcome message", function () {
             regResult.message.should.be.equal("Welcome!");
         });
-        it("increments the signInCount", function () {
-            regResult.user.signInCount.should.be.equal(1);
-        })
     });
 
     describe("an empty or null username", function () {
         var regResult;
         before(function(done) {
             reg.applyForMembership({
-                "password": "xxx",
-                confirm: "xxx",
-                phoneNumber: "23232323",
-                email: "kysiek@wp.com"
+                "password": "xxx"
             }, function(err, result) {
                 regResult = result;
                 done();
@@ -75,37 +66,13 @@ describe("Registration", function () {
         });
     });
 
-    describe("an empty or null phone number", function () {
-        var regResult;
-        before(function(done) {
-            reg.applyForMembership({
-                "password": "xxx",
-                confirm: "xxx",
-                phoneNumber: "",
-                email: "kysiek@wp.com",
-                username: "kysiek"
-            }, function(err, result) {
-                regResult = result;
-                done();
-            });
-        });
-        it("is not successful", function () {
-            regResult.success.should.equal(false);
-        });
-        it("tells user that phone number is required", function () {
-            regResult.message.should.equal("Phone number is required");
-        });
-    });
 
     describe("an empty or null password", function () {
         var regResult;
         before(function(done) {
             reg.applyForMembership({
                 "password": "",
-                confirm: "xxx",
-                phoneNumber: "asdasd",
-                email: "kysiek@wp.com",
-                username: "kysiek"
+                username: "kysiekk"
             }, function(err, result) {
                 regResult = result;
                 done();
@@ -118,38 +85,13 @@ describe("Registration", function () {
             regResult.message.should.equal("Password is required");
         });
     });
-    
-    describe("password and confirm mismatch", function () {
-        var regResult;
-        before(function(done) {
-            reg.applyForMembership({
-                "password": "asd",
-                confirm: "xxx",
-                phoneNumber: "asdasd",
-                email: "kysiek@wp.com",
-                username: "kysiek"
-            }, function(err, result) {
-                regResult = result;
-                done();
-            });
-        });
-        it("is not successful", function () {
-            regResult.success.should.be.equal(false);
-        });
-        it("tells user that passwords do not match", function () {
-            regResult.message.should.equal("Passwords do not match");
-        });
-    });
 
 
     describe("username already exist", function () {
         var regResult;
         before(function(done) {
             reg.applyForMembership({
-                "password": "asd",
-                confirm: "xxx",
-                phoneNumber: "asdasd",
-                email: "kysiek@wp.com",
+                password: "asd",
                 username: "kysiek"
             }, function(err, result) {
                 regResult = result;
@@ -158,8 +100,10 @@ describe("Registration", function () {
 
         });
         it("is not successful", function () {
+            regResult.success.should.equal(false);
         });
         it("tells user that username already exists", function () {
+            regResult.message.should.equal("This username already exists");
         });
     });
 });

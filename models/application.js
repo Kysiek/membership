@@ -3,11 +3,8 @@
  */
 var Application = function(args) {
     var app = {};
-    app.email = args.email;
     app.username = args.username;
     app.password = args.password;
-    app.confirm = args.confirm;
-    app.phoneNumber = args.phoneNumber;
     app.status = "pending";
     app.code = null;
     app.message = null;

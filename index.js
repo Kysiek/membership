@@ -21,7 +21,7 @@ var Membership = function (connection) {
 
     };
     
-    self.authenticate = function (phoneNumber, password, next) {
+    self.authenticate = function (username, password, next) {
         var auth = new Authentication(connection);
 
         auth.on("authenticated", function (authResult) {
@@ -30,10 +30,10 @@ var Membership = function (connection) {
         auth.on("non-authenticated", function (authResult) {
             self.emit("non-authenticated", authResult)
         });
-        auth.authenticate({phoneNumber: phoneNumber, password: password}, next);
+        auth.authenticate({username: username, password: password}, next);
     };
 
-    self.register = function (username, password, confirm, phoneNumber,  next) {
+    self.register = function (username, password, next) {
         var reg = new Registration(connection);
 
         reg.on("registered", function (regResult) {
@@ -42,7 +42,7 @@ var Membership = function (connection) {
         reg.on("non-registered", function (regResult) {
             self.emit("non-registered", regResult)
         });
-        reg.applyForMembership({username: username, password: password, confirm: confirm, phoneNumber: phoneNumber}, next);
+        reg.applyForMembership({username: username, password: password}, next);
     };
 };
 

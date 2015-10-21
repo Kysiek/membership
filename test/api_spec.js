@@ -10,7 +10,7 @@ describe("Main API", function () {
     var memb,
         connection;
     before(function (done) {
-        connection = mysqlDB.createConnection({host: "localhost", user: "kysiek", password: "passs", database: "BlaBlaPaczka"});
+        connection = mysqlDB.createConnection({host: "localhost", user: "root", password: "", database: "AngryHamster"});
         connection.connect(function (err) {
             if(err) {
                 console.log("Error while connecting to the MySQL DB: " + err.stack);
@@ -26,7 +26,7 @@ describe("Main API", function () {
     describe("authentication", function () {
         var newUser = {};
         before(function (done) {
-            memb.register("kysiekk", "xxx", "xxx", "6982509434", function (err, result) {
+            memb.register("kysiek_reg", "passsss", function (err, result) {
                 newUser = result.user;
                 console.log(result.message);
                 assert.ok(result.success, "Can't register");
@@ -34,7 +34,7 @@ describe("Main API", function () {
             });
         });
         it("authenticates", function (done) {
-            memb.authenticate("6982509434","xxx", function (err, result) {
+            memb.authenticate("kysiek_reg","passsss", function (err, result) {
                 result.success.should.be.equal(true);
                 done();
             });
